@@ -16,10 +16,10 @@ const MemberList = ({ selectedRoom, onlineUsers, usersTyping}) => {
 
   const getInitials = (name) =>
     name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
+      ?.split(" ")
+      ?.map((n) => n[0])
+      ?.join("")
+      ?.toUpperCase();
 
   return (
     <div className={`member-list relative flex flex-col h-full max-h-screen ${bgColor} border ${borderColor} font-sans`}>
@@ -49,7 +49,7 @@ const MemberList = ({ selectedRoom, onlineUsers, usersTyping}) => {
             <li key={member._id} className={`flex items-center justify-between px-4 sm:px-5 py-3 ${hoverBg} transition duration-150`}>
               <div className="flex items-center space-x-3 sm:space-x-4 w-full">
                 <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white shadow-md shrink-0" style={{ backgroundColor: memberColor }}>
-                  {getInitials(member.username)}
+                  {getInitials(member?.username)}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className={`truncate font-medium ${textColor}`}>{member.username}</p>

@@ -8,17 +8,10 @@ import { FaBars, FaTimes, FaSun, FaMoon, FaArrowLeft } from 'react-icons/fa';
 const APIURL = "https://jibber-backend.onrender.com";
 
 const Sidebar = () => {
-    const [newRoom, setNewRoom] = useState('');
-    const [newRoomDescription, setNewRoomDescription] = useState('');
-    const [rooms, setRooms] = useState([]);
-    const [userRooms, setUserRooms] = useState([]);
-    const [isCreating, setIsCreating] = useState(false);
-    const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);
     const [filteredRooms, setFilteredRooms] = useState([]); // For search functionality
     const [searchQuery, setSearchQuery] = useState(''); // Search query state
-
-    const { isDarkMode, setIsDarkMode } = useContext(ChatContext);
+    const { isDarkMode, setIsDarkMode, isCreating, setisCreating, error,
+        setError, loading, setLoading, rooms, setRooms, userRooms, setUserRooms } = useContext(ChatContext);
 
     const navigate = useNavigate();
     const [isOpen, setIsOpen] = useState(false);
@@ -84,55 +77,11 @@ const Sidebar = () => {
         } finally {
             setLoading(false);
         }
-    }, [navigate]);
+    }, [navigate, setError, setLoading, setRooms, setUserRooms]);
 
     useEffect(() => {
         fetchRooms();
     }, [fetchRooms]);
-
-    const handleCreateRoom = async (e) => {
-        e.preventDefault();
-        if (!newRoom.trim()) {
-            setError('Room name cannot be empty.');
-            return;
-        }
-
-        try {
-            setLoading(true);
-            setError('');
-
-            const response = await axios({
-                method: 'post',
-                url: `${APIURL}/api/rooms/create`,
-                data: {
-                    name: newRoom,
-                    description: newRoomDescription
-                },
-                withCredentials: true
-            });
-
-            setRooms(prevRooms => [...prevRooms, response.data]);
-            setUserRooms(prevUserRooms => [...prevUserRooms, response.data._id]);
-            setSelectedRoom(response.data);
-            setIsCreating(false);
-            setNewRoom('');
-            setNewRoomDescription('');
-        } catch (error) {
-            console.error('Error creating room:', error);
-            if (error.response) {
-                setError(error.response.data.message || 'Failed to create room.');
-                if (error.response.status === 401 || error.response.status === 403) {
-                    navigate('/login');
-                }
-            } else if (error.request) {
-                setError('No response from server. Please try again later.');
-            } else {
-                setError('An unexpected error occurred.');
-            }
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const handleJoinRoom = async (roomId) => {
         try {
@@ -255,7 +204,7 @@ const Sidebar = () => {
                         </h2>
                         <i
                             className={`fa-solid fa-circle-plus ${isDarkMode ? 'text-green-300' : 'text-green-700'} text-xl cursor-pointer hover:scale-110 transition-transform duration-300`}
-                            onClick={() => setIsCreating(!isCreating)}
+                            onClick={() => setisCreating(!isCreating)}
                             title="Create Room"
                         />
                     </div>
@@ -293,43 +242,6 @@ const Sidebar = () => {
                         </div>
                     )}
 
-                    {/* Create Room */}
-                    {isCreating && (
-                        <form onSubmit={handleCreateRoom} className={`space-y-3 mb-6 p-4 ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-900'} rounded-md shadow`}>
-                            <h3 className="text-base font-semibold mb-2">Create New Room</h3>
-                            <div>
-                                <label htmlFor="roomName" className="text-sm font-medium">Room Name</label>
-                                <input
-                                    type="text"
-                                    id="roomName"
-                                    value={newRoom}
-                                    onChange={(e) => setNewRoom(e.target.value)}
-                                    required
-                                    placeholder="Enter room name"
-                                    className={`mt-1 block w-full px-3 py-2 rounded-md border text-sm focus:outline-none focus:ring-2 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white focus:ring-indigo-400' : 'bg-white border-gray-300 text-black focus:ring-indigo-400'}`}
-                                />
-                            </div>
-                            <div>
-                                <label htmlFor="roomDescription" className="text-sm font-medium">Description</label>
-                                <input
-                                    type="text"
-                                    id="roomDescription"
-                                    value={newRoomDescription}
-                                    onChange={(e) => setNewRoomDescription(e.target.value)}
-                                    placeholder="Optional description"
-                                    className={`mt-1 block w-full px-3 py-2 rounded-md border text-sm focus:outline-none focus:ring-2 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white focus:ring-indigo-400' : 'bg-white border-gray-300 text-black focus:ring-indigo-400'}`}
-                                />
-                            </div>
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className={`w-full py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2 transition-colors duration-300 ${isDarkMode ? 'bg-indigo-600 text-white hover:bg-indigo-500' : 'bg-indigo-500 text-white hover:bg-indigo-400'} disabled:bg-gray-400`}
-                            >
-                                {loading ? 'Creating...' : 'Create'}
-                            </button>
-                        </form>
-                    )}
-
                     {/* Room List */}
                     <ul className="space-y-1 overflow-y-auto overflow-x-hidden">
                         {loading && (
@@ -345,7 +257,7 @@ const Sidebar = () => {
                             </li>
                         )}
 
-                        {filteredRooms.map((room) => (
+                        {filteredRooms?.map((room) => (
                             <li
                                 key={room._id}
                                 className={`p-3 rounded-lg cursor-pointer transition-all duration-200
@@ -353,7 +265,7 @@ const Sidebar = () => {
                                         ? isDarkMode
                                             ? 'bg-gray-600 border-2 border-indigo-300'
                                             : 'bg-blue-200 border-2 border-blue-400'
-                                        : userRooms.includes(room._id)
+                                        : userRooms?.includes(room._id)
                                             ? isDarkMode
                                                 ? 'bg-gray-900 hover:bg-gray-800'
                                                 : 'bg-blue-50 hover:bg-blue-100'
@@ -361,14 +273,14 @@ const Sidebar = () => {
                                                 ? 'bg-gray-900 hover:bg-gray-800'
                                                 : 'bg-blue-50 hover:bg-blue-100'
                                     }`}
-                                onClick={() => userRooms.includes(room._id) && setSelectedRoom(room)}
+                                onClick={() => userRooms?.includes(room._id) && setSelectedRoom(room)}
                             >
                                 <div className="flex items-center space-x-4">
                                     <div className="relative">
                                         <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${isDarkMode ? 'bg-white text-gray-800' : 'bg-white text-gray-700'}`}>
                                             {room.name[0]?.toUpperCase()}
                                         </div>
-                                        {userRooms.includes(room._id) && (
+                                        {userRooms?.includes(room._id) && (
                                             <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></span>
                                         )}
                                     </div>
@@ -380,7 +292,7 @@ const Sidebar = () => {
                                     </div>
 
                                     <div className="flex justify-end">
-                                        {!userRooms.includes(room._id) ? (
+                                        {!userRooms?.includes(room._id) ? (
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();

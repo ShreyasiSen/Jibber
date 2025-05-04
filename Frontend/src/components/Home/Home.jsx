@@ -141,7 +141,7 @@ const HeroSection = () => {
             animate="visible"
           >
             <img
-              src="./Home.png" // Replace with a modern, sleek hero image
+              src="./Home.png"
               alt="Modern Communication Interface"
               className="rounded-lg shadow-2xl w-full max-w-5xl mx-auto lg:mx-0"
             />
